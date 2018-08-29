@@ -23,27 +23,103 @@ var DAO = {
       return valid_entries;
     }
   },
-  insert:function(data){
+  select:function(){
+
+  },
+  insert: function(data){
     let valid_entries = this.valid_entries(data);
     if(valid_entries.length > 0 ){
-      sql_insert = "INSERT INTO " +  this.model.class + "(";
+      sql = "INSERT INTO " +  this.model.class + "(";
       for(i=0;i<valid_entries.length;i++){
         let entry = valid_entries[i];
-        sql_insert += entry[0];
+        sql += entry[0];
         if(valid_entries.length-1>i){
-          sql_insert+=",";
+          sql+=",";
         }
       }
-      sql_insert+=") values(";
+      sql+=") values(";
       for(i=0;i<valid_entries.length;i++){
         let entry = valid_entries[i];
-        sql_insert += entry[1];
+        if(typeof(entry[1]) == "string")
+          sql += "'" + entry[1] + "'";
+        else
+          sql += entry[1];
         if(valid_entries.length-1>i){
-          sql_insert+=",";
+          sql+=",";
         }
       }
-      sql_insert+=")"
-      console.log(sql_insert)
+      sql+=");"
+      this.in_query=true;
+      result = this.db.query(sql, function(error,results,fields){
+        this.in_query=false;
+        if(!error){
+          return results
+        }
+      });
+      return result;
+    }
+  },
+  update: function(data,selector){
+    let valid_entries = this.valid_entries(data);
+    if(selector != undefined){
+      if(valid_entries.length > 0 ){
+        sql = "UPDATE " +  this.model.class + " SET ";
+        for(i=0;i<valid_entries.length;i++){
+          let entry = valid_entries[i];
+          if(typeof(entry[1]) == "string")
+            sql += entry[0] + "=" + "'" + entry[1] + "'";
+          else
+            sql += entry[0] + "=" + entry[1];
+          if(valid_entries.length-1>i){
+            sql+=",";
+          }
+        }
+        selector_entries = Object.entries(selector);
+        if(selector_entries.length>0){
+          sql += " where ";
+          for(i=0;i<selector_entries.length;i++){
+            let entry = selector_entries[i];
+            if(typeof(entry[1]) == "string")
+              sql += entry[0] + "=" + "'" + entry[1] + "'";
+            else
+              sql += entry[0] + "=" + entry[1];
+            if(selector_entries.length-1>i){
+              sql+=",";
+            }
+          }
+          sql += ";";
+          result = this.db.query(sql, function(error,results,fields){
+            if(!error){
+              return results
+            }
+          });
+          return result;
+        }
+      }
+    }
+  },
+  delete: function(selector){
+    sql="";
+    selector_entries = Object.entries(selector);
+    if(selector_entries.length>0){
+      sql += "DELETE FROM "+this.model.class + " where ";
+      for(i=0;i<selector_entries.length;i++){
+        let entry = selector_entries[i];
+        if(typeof(entry[1]) == "string")
+          sql += entry[0] + "=" + "'" + entry[1] + "'";
+        else
+          sql += entry[0] + "=" + entry[1];
+        if(selector_entries.length-1>i){
+          sql+=",";
+        }
+      }
+      sql += ";";
+      result = this.db.query(sql, function(error,results,fields){
+        if(!error){
+          return results
+        }
+      });
+      return result;
     }
   }
 }

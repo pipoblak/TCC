@@ -14,12 +14,20 @@ var DAO = require('./models/DAO');
 DAO.initialize(db_con);
 
 var ResourceManager = require('./models/ResourceManager')
+var Resource = require('./models/Resource')
+var User = require('./models/User')
 // ResourceManager.initialize(DAO)
-new ResourceManager(DAO).insert({"first_name":"batata"});
+
+// new ResourceManager(DAO).update({"first_name":"batata"},{"_id":1});
+// new ResourceManager(DAO).delete({"_id":1});
 
 var app = express();
 
+// START DB SCHEMA
 startup.start(db_con, sql_startup);
+db_con.database="tcc";
+
+console.log(new ResourceManager(DAO).insert({"first_name":"batata"}));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

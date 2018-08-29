@@ -1,3 +1,5 @@
+CREATE DATABASE IF NOT EXISTS tcc;
+use tcc;
 CREATE TABLE IF NOT EXISTS `resource_managers` (
  `_id` INT NOT NULL AUTO_INCREMENT,
  `first_name` varchar(100) DEFAULT NULL,

@@ -5,6 +5,13 @@ var ResourceManager = function(DAO) {
   this.dao = DAO.set(this);
 }
 ResourceManager.prototype.insert = function(data){
-  this.dao.insert(data);
+  let result = this.dao.insert(data);
+  return result;
+}
+ResourceManager.prototype.update = function(data,selector){
+  this.dao.update(data,selector);
+}
+ResourceManager.prototype.delete = function(selector){
+  this.dao.delete(selector);
 }
 module.exports = ResourceManager;
