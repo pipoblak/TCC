@@ -1,17 +1,17 @@
 const crud_interface = function(model,router){
+  router.post('/', function (req, res) {
+    sequelize.sync()
+      .then(() => model.create(req.body))
+      .then(user => {
+        res.send(user.toJSON());
+    });
+  });
   router.get('/', function(req, res, next) {
     res.setHeader('Content-Type', 'application/json');
     sequelize.sync()
       .then(() => model.findAll())
       .then(users => {
         res.send(JSON.stringify(users));
-    });
-  });
-  router.post('/', function (req, res) {
-    sequelize.sync()
-      .then(() => model.create(req.body))
-      .then(user => {
-        res.send(user.toJSON());
     });
   });
   router.patch('/:id', function (req, res) {
