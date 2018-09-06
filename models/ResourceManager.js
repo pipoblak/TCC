@@ -1,17 +1,27 @@
-var ResourceManager = function(DAO) {
-  this.class="resource_managers";
-  this.fields=["_id","first_name","last_name","cpf","username","password","created_at","updated_at"];
-  this.not_updatable_fields=["_id"];
-  this.dao = DAO.set(this);
+const ResourceManager = sequelize.define('resource_manager',
+  {
+    _id:{ type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
+    first_name:{type: Sequelize.STRING},
+    last_name:{type: Sequelize.STRING},
+    cpf:{type: Sequelize.STRING, unique: true},
+    username:{type: Sequelize.STRING, unique: true},
+    password:{type: Sequelize.STRING, unique: true}
+  },
+  {
+    hooks: {
+      beforeCreate: (user) => {
+        const salt = bcrypt.genSaltSync();
+        user.password = bcrypt.hashSync(user.password, salt);
+      }
+    },
+  }
+)
+
+ResourceManager.sync()
+
+
+ResourceManager.prototype.validPassword = function (password) {
+  return bcrypt.compareSync(password, this.password)
 }
-ResourceManager.prototype.insert = function(data){
-  let result = this.dao.insert(data);
-  return result;
-}
-ResourceManager.prototype.update = function(data,selector){
-  this.dao.update(data,selector);
-}
-ResourceManager.prototype.delete = function(selector){
-  this.dao.delete(selector);
-}
+
 module.exports = ResourceManager;
