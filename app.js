@@ -17,7 +17,7 @@ global.sequelize = new Sequelize('tcc', 'root', '', {
 global.ResourceManager = require('./models/ResourceManager')
 global.Resource = require('./models/Resource')
 global.User = require('./models/User')
-
+var cors = require('cors');
 var fs = require('fs');
 var createError = require('http-errors');
 var express = require('express');
@@ -39,7 +39,7 @@ var resourcesRouter = require('./routes/resources');
 
 
 var app = express();
-
+app.use(cors())
 
 
 // sequelize.sync()
