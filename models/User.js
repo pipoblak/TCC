@@ -5,6 +5,7 @@ const User = sequelize.define('user',{
   cpf:{type: Sequelize.STRING, unique: true},
   rfid_token:{type: Sequelize.STRING.BINARY , unique: true},
   biometric_bin:{type: Sequelize.STRING.BINARY , unique: true},
+  facial_bin:{type: Sequelize.STRING.BINARY , unique: true},
 })
 User.sync()
 module.exports = User;
