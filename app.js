@@ -1,4 +1,15 @@
 global.bcrypt = require("bcrypt-nodejs")
+global.uuid = require('uuid/v4');
+global.multer = require("multer") //FOR IMAGE SAVING
+global.storage = global.multer.diskStorage({
+  destination: function(req,file,callback){
+    callback(null,'./uploads/')
+  },
+  filename: function(req, file, callback){
+    callback(null, global.uuid() +"_" + file.originalname)
+  },
+});
+global.upload = global.multer({storage: global.storage});
 //Module for ORM mysql
 global.Sequelize = require('sequelize');
 global.sequelize = new Sequelize('tcc', 'root', '', {
