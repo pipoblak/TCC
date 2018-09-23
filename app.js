@@ -51,7 +51,7 @@ var resourcesRouter = require('./routes/resources');
 
 var app = express();
 app.use(cors())
-
+app.use('/uploads',express.static('uploads'));
 
 // sequelize.sync()
 //   .then(() => ResourceManager.create({
