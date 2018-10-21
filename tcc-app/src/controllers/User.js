@@ -30,11 +30,25 @@ export class UserBox extends Component{
       this.setState({lista:current_list});
     }.bind(this));
   }
+  notifyChange(){
+    $.ajax({
+      url:"http://localhost:3001/users",
+      contentType: "application/json",
+      type:"GET",
+      success: function(result){
+        PubSub.publish('user-list',result)
+      },
+      error: function(result){
+        console.log("error")
+        console.log(result)
+      }
+    });
+  }
   render(){
     return(
       <div>
         <UserForm/>
-        <UserTable lista={this.state.lista}/>
+        <UserTable lista={this.state.lista} notifyChange={this.notifyChange}/>
       </div>
     );
   }
@@ -134,6 +148,29 @@ export class UserForm extends Component{
   }
 }
 export class UserTable extends Component {
+  deleteUser(event){
+    let target = $(event.target);
+    let user_id = target.parents("tr").attr("data-id");
+    $.ajax({
+      url:"http://localhost:3001/users/"+user_id,
+      contentType: "application/json",
+      type:"DELETE",
+      data:{},
+      success: function(result){
+        if(result.status==200)
+          this.props.notifyChange();
+      }.bind(this),
+      error: function(result){
+        console.log("error")
+        console.log(result)
+      }
+    });
+
+  }
+  constructor() {
+    super();
+    this.deleteUser = this.deleteUser.bind(this);
+  }
   render() {
     return (
       <div>
@@ -147,23 +184,25 @@ export class UserTable extends Component {
               <th>Foto de Rosto</th>
               <th>Criado Em</th>
               <th>Atualizado Em</th>
+              <th>Açōes</th>
             </tr>
           </thead>
           <tbody>
             {
               this.props.lista.map(function(user){
                 return (
-                  <tr key={user._id}>
+                  <tr data-id={user._id} key={user._id}>
                     <td>{user.first_name}</td>
                     <td>{user.last_name}</td>
                     <td>{user.cpf}</td>
                     <td>{user.rfid_token}</td>
-                    <td>{user.facial_bin}</td>
+                    <td>{user.facial_bin_path}</td>
                     <td>{user.createdAt}</td>
                     <td>{user.updatedAt}</td>
+                    <td><button onClick={this.deleteUser}>X</button></td>
                   </tr>
                 );
-              })
+              }.bind(this))
             }
           </tbody>
         </table>

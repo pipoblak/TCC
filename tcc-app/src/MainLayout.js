@@ -15,7 +15,7 @@ class MainLayout extends Component {
             <ul className="pure-menu-list">
               <li className="pure-menu-item"><Link to="/" className="pure-menu-link">Inicio</Link></li>
               <li className="pure-menu-item"><Link to="/users" className="pure-menu-link">Usuarios</Link></li>
-              <li className="pure-menu-item"><Link to="#" className="pure-menu-link">Recursos</Link></li>
+              <li className="pure-menu-item"><Link to="/resources" className="pure-menu-link">Recursos</Link></li>
             </ul>
           </div>
         </div>

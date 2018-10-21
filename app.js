@@ -9,7 +9,16 @@ global.storage = global.multer.diskStorage({
     callback(null, global.uuid() +"_" + file.originalname)
   },
 });
+global.storageTemp = global.multer.diskStorage({
+  destination: function(req,file,callback){
+    callback(null,'./temp/uploads/')
+  },
+  filename: function(req, file, callback){
+    callback(null, global.uuid() +"_" + file.originalname)
+  },
+});
 global.upload = global.multer({storage: global.storage});
+global.tempUpload = global.multer({storage: global.storageTemp});
 //Module for ORM mysql
 global.Sequelize = require('sequelize');
 global.sequelize = new Sequelize('tcc', 'root', '', {
