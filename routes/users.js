@@ -63,9 +63,15 @@ router.post('/:id/compare_face',global.tempUpload.single('image'),function (req,
       };
       rekognition.compareFaces(params,function(err,data){
         if (err) res.send(JSON.stringify(err));
-        else     res.send(JSON.stringify(data));
+        else{
+          let similarity = data.FaceMatches[0].Similarity;
+          let paraconcistenteR = similarity - (100 - similarity);
+          res.send(JSON.stringify(paraconcistenteR));
+
+         }
+        fs.unlink(req.file.path);
       });
-      fs.unlink(req.file.path);
+
   });
 
 

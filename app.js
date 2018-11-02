@@ -21,7 +21,7 @@ global.upload = global.multer({storage: global.storage});
 global.tempUpload = global.multer({storage: global.storageTemp});
 //Module for ORM mysql
 global.Sequelize = require('sequelize');
-global.sequelize = new Sequelize('tcc', 'root', '', {
+global.sequelize = new Sequelize('tcc', 'tcc', 'fe170897', {
   host: 'localhost',
   dialect: 'mysql',
   pool: {
