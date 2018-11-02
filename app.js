@@ -24,6 +24,11 @@ global.Sequelize = require('sequelize');
 global.sequelize = new Sequelize('tcc', 'tcc', 'fe170897', {
   host: 'localhost',
   dialect: 'mysql',
+  define: {
+    charset: 'utf8',
+    collate: 'utf8_general_ci',
+    timestamps: true
+  },
   pool: {
     max: 5,
     min: 0,
