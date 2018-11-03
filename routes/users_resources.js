@@ -10,9 +10,9 @@ router.patch('/update_permission', function (req, res) {
     return res.status(400).json({ error: err });
   });
 });
-router.patch('/has_permission', function (req, res) {
+router.get('/has_permission', function (req, res) {
   sequelize.sync()
-    .then(() => model.find({user_id:req.body.user_id, resource_id: req.body.resource_id}))
+    .then(() => model.find({where:{user_id:req.body.user_id, resource_id: req.body.resource_id}}))
     .then(result => {
       res.send(result.active);
   }).catch(function (err) {
