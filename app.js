@@ -39,9 +39,9 @@ global.sequelize = new Sequelize('tcc', 'tcc', 'fe170897', {
 });
 
 // Start MODELS
-global.ResourceManager = require('./models/ResourceManager')
 global.Resource = require('./models/Resource')
 global.User = require('./models/User')
+global.UserResource = require('./models/UserResource')
 var cors = require('cors');
 var fs = require('fs');
 var createError = require('http-errors');
@@ -58,7 +58,7 @@ global.crud_interface = require('./routes/crud_interface')
 //ROUTES
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-var resourceManagersRouter = require('./routes/resource_managers');
+var resourceManagersRouter = require('./routes/users_resources');
 var resourcesRouter = require('./routes/resources');
 
 

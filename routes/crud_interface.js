@@ -27,8 +27,8 @@ const crud_interface = function(model,router){
   router.patch('/:id', function (req, res) {
     sequelize.sync()
       .then(() => model.update(req.body,{ where: {_id:req.params.id} }))
-      .then(user => {
-        res.send(user);
+      .then(result => {
+        res.send(result);
     }).catch(function (err) {
       return res.status(400).json({ error: err });
     });
