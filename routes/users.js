@@ -60,6 +60,7 @@ router.post('/:id/compare_face',global.tempUpload.single('image'),function (req,
   sequelize.sync()
     .then(() => User.find({id:req.params.id }))
     .then(user => {
+      console.log(req.file)
       let params = {
         SourceImage: { /* required */
           Bytes: Buffer.from(user.facial_bin.toString(), 'base64')
