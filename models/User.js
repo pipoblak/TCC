@@ -4,7 +4,7 @@ const User = sequelize.define('user',{
   last_name:{type: Sequelize.STRING},
   cpf:{type: Sequelize.STRING, unique: true},
   rfid_token:{type: Sequelize.STRING.BINARY , unique: true},
-  biometric_bin:{type: Sequelize.STRING.BINARY , unique: true},
+  biometric_bin:{type: Sequelize.BLOB('long')},
   facial_bin:{type: Sequelize.BLOB('long')},
   facial_bin_path:{type: Sequelize.STRING , unique: true},
 })
