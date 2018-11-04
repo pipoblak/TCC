@@ -273,10 +273,11 @@ export class UserTable extends Component {
           $.each(row.find("input"),function(i,e){
             $(e).prop("readOnly",false)
           });
-          // $("#first_name").val(result.first_name)
-          // $("#last_name").val(result.last_name)
-          // $("#cpf").val(result.cpf)
-          // $("#rfid_token").val(result.rfid_token)
+          $("#first_name").val(result.first_name)
+          $("#last_name").val(result.last_name)
+          $("#cpf").val(result.cpf)
+          $("#rfid_token").val(result.rfid_token)
+
           // console.log(result)
           // this.props.sharedInfo.UserForm.setState(result);
         }.bind(this),
@@ -314,7 +315,7 @@ export class UserTable extends Component {
             {
               this.props.lista.map(function(user){
                 return (
-                  <tr data-id={user._id} key={user._id}>          
+                  <tr data-id={user._id} key={user._id}>
                     <td>{user.first_name}</td>
                     <td>{user.last_name}</td>
                     <td>{user.cpf}</td>
