@@ -19,7 +19,7 @@ const crud_interface = function(model,router){
   router.get('/:id', function(req, res, next) {
     res.setHeader('Content-Type', 'application/json');
     sequelize.sync()
-      .then(() => model.find({id:req.params.id}))
+      .then(() => model.find({where:{_id:req.params.id}}))
       .then(results => {
         res.send(JSON.stringify(results));
     });

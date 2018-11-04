@@ -44,10 +44,11 @@ export class UserBox extends Component{
       }
     });
   }
+
   render(){
     return(
       <div>
-        <UserForm/>
+        <UserForm />
         <UserTable lista={this.state.lista} notifyChange={this.notifyChange}/>
       </div>
     );
@@ -63,7 +64,8 @@ export class UserForm extends Component{
       last_name: '',
       rfid_token: '',
       cpf: '',
-      facial_bin: ''
+      facial_bin: '',
+      biometric_bin: ''
     };
     this.submitUser = this.submitUser.bind(this);
     this.setFirstName = this.setFirstName.bind(this);
@@ -71,6 +73,7 @@ export class UserForm extends Component{
     this.setCpf = this.setCpf.bind(this);
     this.setRfidToken = this.setRfidToken.bind(this);
     this.setFacialBin = this.setFacialBin.bind(this);
+    this.setFingerPrint = this.setFingerPrint.bind(this);
     // this.getUsers = this.getUsers.bind(this);
   }
   setFirstName(event){
@@ -90,6 +93,75 @@ export class UserForm extends Component{
     let file = event.target.files[0];
     this.setState({facial_bin: file});
   }
+  setFingerPrint(event){
+    let target = $(event.target);
+    let holder = target.parents(".pure-control-group");
+
+    if(holder.find(".status").length<=0){
+      holder.append('<span class="status"></span>');
+    }
+    let status = holder.find(".status");
+    status.html("&nbsp;Aguarde um Momento...")
+    let fingerData1="";
+    let fingerData2="";
+    let stateHolder = this;
+    let fingerprint_server = "192.168.43.15:8083"
+    //Check Status WebServer
+    $.ajax({
+        url:"http://"+fingerprint_server+"/status",
+        dataType: 'text',
+        success:function(resposta){
+          status.html("&nbsp;Insira o Dedo desejado e aguarde...");
+          //Get FingerData1
+          $.ajax({
+              url:"http://"+fingerprint_server+"/get_finger1",
+              dataType: 'text',
+              success:function(resposta1){
+                fingerData1=resposta1;
+                status.html("&nbsp;Retire o Dedo e Insira novamente...");
+                //Get FingerData2
+                $.ajax({
+                    url:"http://"+fingerprint_server+"/get_finger2",
+                    dataType: 'text',
+                    success:function(resposta2){
+                      fingerData2=resposta2;
+                      status.html("&nbsp;Aguarde um Momento...");
+                      //GET TEMPLATE
+                      $.ajax({
+                          url:"http://"+fingerprint_server+"/get_finger_template",
+                          dataType: 'text',
+                          success:function(resposta3){
+                            stateHolder.setState({biometric_bin: resposta});
+                            status.html("&nbsp;OK!");
+                          }.bind(this),
+                          error: function(resposta){
+                            status.text("Erro de Comunicação.4");
+                          }
+                        }
+                      );
+                    }.bind(this),
+                    error: function(resposta){
+                      status.text("Erro de Comunicação.3");
+                    }
+                  }
+                );
+              }.bind(this),
+              error: function(resposta){
+                status.text("Erro de Comunicação.2");
+              }
+            }
+          );
+        }.bind(this),
+        error: function(resposta){
+          status.text("Erro de Comunicação.");
+        }
+      }
+    );
+
+  }
+  updateUser(user){
+    console.log("OI")
+  }
   //Evento que cria ou atualiza usuários
   submitUser(event){
     event.preventDefault();
@@ -100,28 +172,44 @@ export class UserForm extends Component{
     formData.append('last_name', this.state.last_name);
     formData.append('rfid_token', this.state.rfid_token);
     formData.append('cpf', this.state.cpf);
+    formData.append('biometric_bin', this.state.biometric_bin);
+    let stateHolder = this;
+    if(this.state.biometric_bin==''){
+      new ErrorHandling().publishError({message:"Por favor, insira uma FingerPrint!"});
+    }
+    else{
+      $.ajax({
+        url:"http://localhost:3001/users",
+        cache: false,
+        contentType: false,
+        processData: false,
+        type:"POST",
+        data: formData,
+        success: function(result){
+          PubSub.publish('user-list',result)
+          stateHolder.setState({
+            first_name: '',
+            last_name: '',
+            rfid_token: '',
+            cpf: '',
+            facial_bin: '',
+            biometric_bin: ''
+          })
 
-    $.ajax({
-      url:"http://localhost:3001/users",
-      cache: false,
-      contentType: false,
-      processData: false,
-      type:"POST",
-      data: formData,
-      success: function(result){
-        PubSub.publish('user-list',result)
-      },
-      error: function(result){
-        if(result.status===400){
-          new ErrorHandling().publishError(result.responseJSON);
-        }
-        else{
+        },
+        error: function(result){
+          if(result.status===400){
+            new ErrorHandling().publishError(result.responseJSON);
+          }
+          else{
 
+          }
+          console.log("error")
+          console.log(result)
         }
-        console.log("error")
-        console.log(result)
-      }
-    });
+      });
+    }
+
   }
 
   render() {
@@ -138,6 +226,7 @@ export class UserForm extends Component{
             <CustomInput id="cpf" type="text" name="user[cpf]" value={this.state.cpf} onChange={this.setCpf} label="CPF"></CustomInput>
             <CustomInput id="rfid_token" type="text" name="user[rfid_token]"  value={this.state.rfid_token} onChange={this.setRfidToken} label="RFID Token"></CustomInput>
             <CustomInput id="facial_bin" type="file" name="user[facial_bin]"  onChange={this.setFacialBin} label="Foto Rosto"></CustomInput>
+            <CustomButton type="button" className="pure-button pure-button-secondary" text="Carregar FingerPrint" onClick={this.setFingerPrint} label="FingerPrint"></CustomButton>
             <CustomButton type="submit" className="pure-button pure-button-primary" text="Gravar"></CustomButton>
           </form>
 
@@ -167,9 +256,43 @@ export class UserTable extends Component {
     });
 
   }
+  editUser(event){
+    let target = $(event.target);
+    let row  = target.parents("tr");
+    let user_id = row.attr("data-id");
+    if(target.attr("edit")=="true"){
+
+    }
+    else{
+      $.ajax({
+        url:"http://localhost:3001/users/"+user_id,
+        contentType: "application/json",
+        type:"GET",
+        data:{},
+        success: function(result){
+          $.each(row.find("input"),function(i,e){
+            $(e).prop("readOnly",false)
+          });
+          // $("#first_name").val(result.first_name)
+          // $("#last_name").val(result.last_name)
+          // $("#cpf").val(result.cpf)
+          // $("#rfid_token").val(result.rfid_token)
+          // console.log(result)
+          // this.props.sharedInfo.UserForm.setState(result);
+        }.bind(this),
+        error: function(result){
+          console.log("error")
+          console.log(result)
+        }
+      });
+    }
+
+
+  }
   constructor() {
     super();
     this.deleteUser = this.deleteUser.bind(this);
+    this.editUser = this.editUser.bind(this);
   }
   render() {
     return (
@@ -191,7 +314,7 @@ export class UserTable extends Component {
             {
               this.props.lista.map(function(user){
                 return (
-                  <tr data-id={user._id} key={user._id}>
+                  <tr data-id={user._id} key={user._id}>          
                     <td>{user.first_name}</td>
                     <td>{user.last_name}</td>
                     <td>{user.cpf}</td>
@@ -199,7 +322,7 @@ export class UserTable extends Component {
                     <td>{user.facial_bin_path}</td>
                     <td>{user.createdAt}</td>
                     <td>{user.updatedAt}</td>
-                    <td><button onClick={this.deleteUser}>X</button></td>
+                    <td><button onClick={this.deleteUser}>X</button><button onClick={this.editUser}>Edit</button></td>
                   </tr>
                 );
               }.bind(this))
