@@ -131,7 +131,7 @@ export class UserForm extends Component{
                           url:"http://"+fingerprint_server+"/get_finger_template",
                           dataType: 'text',
                           success:function(resposta3){
-                            stateHolder.setState({biometric_bin: resposta});
+                            stateHolder.setState({biometric_bin: resposta3});
                             status.html("&nbsp;OK!");
                           }.bind(this),
                           error: function(resposta){
