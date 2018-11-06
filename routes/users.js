@@ -4,7 +4,7 @@ var app = express();
 var fs = require('fs');
 var AWS = require('aws-sdk');
 var config = new AWS.Config({
-  accessKeyId: 'AKIAI4TQI4JM2G37OWXA', secretAccessKey: '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', region: 'us-east-1'
+  accessKeyId: 'AKIAI3DZL3RNTJTUPMVA', secretAccessKey: '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', region: 'us-east-1'
 });
 AWS.config = config;
 var rekognition = new AWS.Rekognition();
