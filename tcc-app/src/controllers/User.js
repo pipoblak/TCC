@@ -74,7 +74,7 @@ export class UserForm extends Component{
     this.setRfidToken = this.setRfidToken.bind(this);
     this.setFacialBin = this.setFacialBin.bind(this);
     this.setFingerPrint = this.setFingerPrint.bind(this);
-    // this.getUsers = this.getUsers.bind(this);
+    this.loadRfidToken = this.loadRfidToken.bind(this);
   }
   setFirstName(event){
     this.setState({first_name:event.target.value});
@@ -93,6 +93,31 @@ export class UserForm extends Component{
     let file = event.target.files[0];
     this.setState({facial_bin: file});
   }
+  loadRfidToken(event){
+    let target = $(event.target);
+    target.attr("placeholder","Aguarde...");
+    let server = "localhost:8083"
+    $.ajax({
+        url:"http://"+server+"/status",
+        dataType: 'text',
+        success:function(resposta){
+          target.attr("placeholder","Passe o Cartão e Aguarde...");
+
+          $.ajax({
+              url:"http://"+server+"/getRFID",
+              dataType: 'text',
+              success:function(resposta2){
+                target.val(resposta2);
+                target.attr("placeholder","");
+              }.bind(this),
+              error: function(resposta2){
+                target.attr("placeholder","Erro de Comunicação.");
+              }});
+        }.bind(this),
+        error: function(resposta){
+          target.attr("placeholder","Erro de Comunicação.");
+        }});
+  }
   setFingerPrint(event){
     let target = $(event.target);
     let holder = target.parents(".pure-control-group");
@@ -105,7 +130,7 @@ export class UserForm extends Component{
     let fingerData1="";
     let fingerData2="";
     let stateHolder = this;
-    let fingerprint_server = "192.168.43.15:8083"
+    let fingerprint_server = "localhost:8083"
     //Check Status WebServer
     $.ajax({
         url:"http://"+fingerprint_server+"/status",
@@ -224,7 +249,7 @@ export class UserForm extends Component{
             <CustomInput id="first_name" type="text" name="user[first_name]" value={this.state.first_name} onChange={this.setFirstName} label="Primeiro Nome"></CustomInput>
             <CustomInput id="last_name" type="text" name="user[last_name]" value={this.state.last_name} onChange={this.setLastName} label="Sobrenome"></CustomInput>
             <CustomInput id="cpf" type="text" name="user[cpf]" value={this.state.cpf} onChange={this.setCpf} label="CPF"></CustomInput>
-            <CustomInput id="rfid_token" type="text" name="user[rfid_token]"  value={this.state.rfid_token} onChange={this.setRfidToken} label="RFID Token"></CustomInput>
+            <CustomInput id="rfid_token" type="text" name="user[rfid_token]"  value={this.state.rfid_token} onChange={this.setRfidToken} label="RFID Token" onDoubleClick={this.loadRfidToken}></CustomInput>
             <CustomInput id="facial_bin" type="file" name="user[facial_bin]"  onChange={this.setFacialBin} label="Foto Rosto"></CustomInput>
             <CustomButton type="button" className="pure-button pure-button-secondary" text="Carregar FingerPrint" onClick={this.setFingerPrint} label="FingerPrint"></CustomButton>
             <CustomButton type="submit" className="pure-button pure-button-primary" text="Gravar"></CustomButton>

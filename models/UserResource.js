@@ -15,6 +15,7 @@ const UserResource = sequelize.define('user_resource',
         key: '_id'
       }
     },
+    active: Sequelize.BOOLEAN
   }
 )
 

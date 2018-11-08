@@ -58,7 +58,7 @@ global.crud_interface = require('./routes/crud_interface')
 //ROUTES
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-var resourceManagersRouter = require('./routes/users_resources');
+var userResourcesRouter = require('./routes/users_resources');
 var resourcesRouter = require('./routes/resources');
 
 
@@ -96,7 +96,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/resource_managers', resourceManagersRouter);
+app.use('/user_resources', userResourcesRouter);
 app.use('/resources', resourcesRouter);
 
 // catch 404 and forward to error handler
