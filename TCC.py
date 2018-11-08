@@ -15,6 +15,7 @@ finger = False
 fingerprint_state = False
 fingerprint1 = False
 fingerprint2 = False 
+RFID = True
 ## Initialize FingerPrintSensor
 try:
     f = PyFingerprint('/dev/ttyS0', 57600, 0xFFFFFFFF, 0x00000000)
@@ -82,6 +83,15 @@ class http_handler(http.server.SimpleHTTPRequestHandler):
                 pass
             self.wfile.write(bytes(str(finger),'utf-8'))
             finger=False
+        elif(self.path=='/getRFID'):
+                    self.send_response(200)
+                    self.send_header('Content-type','text')
+                    self.send_header('Access-Control-Allow-Origin','*')
+                    self.end_headers()
+                    global RFID
+                    RFID=False
+                    time.sleep(5);
+                    self.wfile.write(bytes(str(RFID),'utf-8'))
 
 def worker_http():
     httpd = socketserver.ThreadingTCPServer(('',8083),http_handler)
@@ -89,33 +99,33 @@ def worker_http():
     httpd.serve_forever()
 
 
-def worker_nfc():
+def worker_rfid():
         
     while True:
         read_serial = ser.readline()
         try:
             identity = json.loads(read_serial.decode('utf-8'))
             identity_bin = identity['identity']['bin']
-            print(identity_bin)
-            user = json.loads('{}')
-            try:
-                r = requests.get('http://localhost:3001/users/request_access?rfid_token='+identity_bin)
-                user = r.json()
-            except:
-                print('failed to connect server')
-                pass
+            global RFID
             
-                
-            print(user)
-            if('_id' in user):
-                cap = cv2.VideoCapture(0)
-                frame = cap.read()
-                cv2.imwrite('tmpFileImage.jpg',frame[1]);
-                cap.release()
-                compare_face = requests.post('http://localhost:3001/users/'+str(user['_id'])+'/compare_face', files = dict(image=open('tmpFileImage.jpg','rb')))
-                print(compare_face.json())
-                    
-
+            if(RFID!=False):
+                print(identity_bin)
+                user = json.loads('{}')
+                try:
+                    r = requests.get('http://localhost:3001/users/request_access?rfid_token='+identity_bin)
+                    user = r.json()
+                except:
+                    print('failed to connect server')
+                    pass
+                if('_id' in user):
+                    cap = cv2.VideoCapture(0)
+                    frame = cap.read()
+                    cv2.imwrite('tmpFileImage.jpg',frame[1]);
+                    cap.release()
+                    compare_face = requests.post('http://localhost:3001/users/'+str(user['_id'])+'/compare_face', files = dict(image=open('tmpFileImage.jpg','rb')))
+                    print(compare_face.json())
+                        
+            RFID = identity_bin
         except ValueError as e:
             pass
         else:
@@ -142,7 +152,7 @@ def worker_fingerprint():
             time.sleep(2)
 thread_http = threading.Thread(target=worker_http)
 thread_http.start()
-thread_nfc = threading.Thread(target=worker_nfc)
-thread_nfc.start()
+thread_rfid = threading.Thread(target=worker_rfid)
+thread_rfid.start()
 thread_fingerprint = threading.Thread(target=worker_fingerprint)
 thread_fingerprint.start()
