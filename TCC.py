@@ -23,6 +23,7 @@ fingerprint2 = False
 finger_comparisson = False
 RFID = True
 Resource_ID = 1
+resource_state = 0
 ## Initialize FingerPrintSensor
 try:
     f = PyFingerprint('/dev/ttyS0', 57600, 0xFFFFFFFF, 0x00000000)
@@ -100,6 +101,13 @@ class http_handler(http.server.SimpleHTTPRequestHandler):
                     time.sleep(5);
                     self.wfile.write(bytes(str(RFID),'utf-8'))
 
+def check_state():
+    return resource_state
+    
+def trigger_action():
+    gpio.output(21,True)
+    time.sleep(2)
+    gpio.output(21,False)
 def worker_http():
     httpd = socketserver.ThreadingTCPServer(('',8083),http_handler)
     print('Servidor Web OK')
@@ -119,24 +127,25 @@ def worker_rfid():
                 print(identity_bin)
                 user = json.loads('{}')
                 try:
-                    r = requests.get('http://localhost:3001/users/request_access?rfid_token='+identity_bin)
+                    ser.write('wait'.encode('utf-8'))
+                    r = requests.get('http://localhost:3001/users/request_access?rfid_token='+identity_bin, timeout=1)
                     user = r.json()
                 except:
                     print('failed to connect server')
+                    ser.write('error'.encode('utf-8'))
                     pass
                 if('_id' in user):
-                    has_permission = requests.get('http://localhost:3001/user_resources/has_permission?resource_id='+str(Resource_ID)+'&user_id='+ str(user['_id']))
+                    has_permission = requests.get('http://localhost:3001/user_resources/has_permission?resource_id='+str(Resource_ID)+'&user_id='+ str(user['_id']),timeout=1)
                     if(has_permission.json()):
                         cap = cv2.VideoCapture(0)
                         frame = cap.read()
                         cv2.imwrite('tmpFileImage.jpg',frame[1]);
                         cap.release()
-                        compare_face = requests.post('http://localhost:3001/users/'+str(user['_id'])+'/compare_face', files = dict(image=open('tmpFileImage.jpg','rb')))
+                        compare_face = requests.post('http://localhost:3001/users/'+str(user['_id'])+'/compare_face', files = dict(image=open('tmpFileImage.jpg','rb')), timeout=10)
                         try:
                             if(compare_face.json()>=50):
-                                gpio.output(21,True)
-                                time.sleep(2)
-                                gpio.output(21,False)
+                                ser.write('check'.encode('utf-8'))
+                                trigger_action()
                             else:
                                 global fingerprint_state
                                 global finger_comparisson
@@ -146,9 +155,11 @@ def worker_rfid():
                                 finger = False
                                 fingerprint_state = 'read'
                                 print('Inserir Dedo')
+                                ser.write('finger'.encode('utf-8'))
                                 while(finger==False):
                                     time.sleep(1)
                                     pass
+                                ser.write('wait'.encode('utf-8'))
                                 fingerprint1 = finger
                                 fingerprint2 = ast.literal_eval(user['biometric_bin'])
                                 fingerprint_state = 'compare_with_readed'
@@ -157,16 +168,42 @@ def worker_rfid():
                                     pass
                                 print(finger_comparisson)
                                 if(finger_comparisson>=2):
-                                    gpio.output(21,True)
-                                    time.sleep(2)
-                                    gpio.output(21,False)
+                                    ser.write('check'.encode('utf-8'))
+                                    trigger_action()
                                 else:
+                                    ser.write('error'.encode('utf-8'))
                                     print('failed fingerprint')
                                 finger_comparisson = False
-
-
                         except:
+                            ser.write('finger'.encode('utf-8'))
                             print('imagem nao processada')
+                            global fingerprint_state
+                            global finger_comparisson
+                            global fingerprint1
+                            global fingerprint2
+                            global finger
+                            finger = False
+                            fingerprint_state = 'read'
+                            print('Inserir Dedo')
+                            ser.write('wait'.encode('utf-8'))
+                            while(finger==False):
+                                time.sleep(1)
+                                pass
+                            fingerprint1 = finger
+                            fingerprint2 = ast.literal_eval(user['biometric_bin'])
+                            fingerprint_state = 'compare_with_readed'
+                            while(fingerprint_state!=False):
+                                time.sleep(1)
+                                pass
+                            print(finger_comparisson)
+                            if(finger_comparisson>=2):
+                                ser.write('check'.encode('utf-8'))
+                                trigger_action()
+                            else:
+                                ser.write('error'.encode('utf-8'))
+                                print('failed fingerprint')
+                            finger_comparisson = False
+                            
                     else:
                         print('Acesso Negado')
             RFID = identity_bin
@@ -198,7 +235,6 @@ def worker_fingerprint():
         elif(fingerprint_state=='compare_with_readed'):
             f.uploadCharacteristics(0x01,fingerprint1)
             f.uploadCharacteristics(0x02,fingerprint2)
-            print(fingerprint1)
             finger_comparisson = f.compareCharacteristics();
             fingerprint_state = False 
             time.sleep(2)
