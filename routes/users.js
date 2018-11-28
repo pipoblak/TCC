@@ -58,7 +58,7 @@ router.get('/request_access', function (req, res) {
 router.post('/:id/compare_face',global.tempUpload.single('image'),function (req, res) {
   res.setHeader('Content-Type', 'application/json');
   sequelize.sync()
-    .then(() => User.find({id:req.params.id }))
+    .then(() => User.find({id:req.query.id }))
     .then(user => {
       let params = {
         SourceImage: { /* required */

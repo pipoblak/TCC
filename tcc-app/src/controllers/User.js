@@ -4,6 +4,11 @@ import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
 import PubSub from 'pubsub-js';
 import ErrorHandling from "./ErrorHandling";
+var db_url = "http://192.168.43.15:3001/";
+var rasp_url = "192.168.43.15:8083"
+// rasp_url = "localhost:8083"
+
+// db_url = "http://localhost:3001/";
 export class UserBox extends Component{
   constructor() {
     super();
@@ -12,7 +17,7 @@ export class UserBox extends Component{
 
   componentDidMount(){
     $.ajax({
-        url:"http://localhost:3001/users",
+        url:db_url+"users",
         dataType: 'json',
         success:function(resposta){
           this.setState({lista:resposta});
@@ -32,7 +37,7 @@ export class UserBox extends Component{
   }
   notifyChange(){
     $.ajax({
-      url:"http://localhost:3001/users",
+      url:db_url+"users",
       contentType: "application/json",
       type:"GET",
       success: function(result){
@@ -96,15 +101,14 @@ export class UserForm extends Component{
   loadRfidToken(event){
     let target = $(event.target);
     target.attr("placeholder","Aguarde...");
-    let server = "localhost:8083"
     $.ajax({
-        url:"http://"+server+"/status",
+        url:"http://"+rasp_url+"/status",
         dataType: 'text',
         success:function(resposta){
           target.attr("placeholder","Passe o Cartão e Aguarde...");
 
           $.ajax({
-              url:"http://"+server+"/getRFID",
+              url:"http://"+rasp_url+"/getRFID",
               dataType: 'text',
               success:function(resposta2){
                 target.val(resposta2);
@@ -130,30 +134,30 @@ export class UserForm extends Component{
     let fingerData1="";
     let fingerData2="";
     let stateHolder = this;
-    let fingerprint_server = "localhost:8083"
+
     //Check Status WebServer
     $.ajax({
-        url:"http://"+fingerprint_server+"/status",
+        url:"http://"+rasp_url+"/status",
         dataType: 'text',
         success:function(resposta){
           status.html("&nbsp;Insira o Dedo desejado e aguarde...");
           //Get FingerData1
           $.ajax({
-              url:"http://"+fingerprint_server+"/get_finger1",
+              url:"http://"+rasp_url+"/get_finger1",
               dataType: 'text',
               success:function(resposta1){
                 fingerData1=resposta1;
                 status.html("&nbsp;Retire o Dedo e Insira novamente...");
                 //Get FingerData2
                 $.ajax({
-                    url:"http://"+fingerprint_server+"/get_finger2",
+                    url:"http://"+rasp_url+"/get_finger2",
                     dataType: 'text',
                     success:function(resposta2){
                       fingerData2=resposta2;
                       status.html("&nbsp;Aguarde um Momento...");
                       //GET TEMPLATE
                       $.ajax({
-                          url:"http://"+fingerprint_server+"/get_finger_template",
+                          url:"http://"+rasp_url+"/get_finger_template",
                           dataType: 'text',
                           success:function(resposta3){
                             stateHolder.setState({biometric_bin: resposta3});
@@ -204,7 +208,7 @@ export class UserForm extends Component{
     }
     else{
       $.ajax({
-        url:"http://localhost:3001/users",
+        url: db_url + "users",
         cache: false,
         contentType: false,
         processData: false,
@@ -266,7 +270,7 @@ export class UserTable extends Component {
     let target = $(event.target);
     let user_id = target.parents("tr").attr("data-id");
     $.ajax({
-      url:"http://localhost:3001/users/"+user_id,
+      url: db_url+"users/"+user_id,
       contentType: "application/json",
       type:"DELETE",
       data:{},
@@ -290,7 +294,7 @@ export class UserTable extends Component {
     }
     else{
       $.ajax({
-        url:"http://localhost:3001/users/"+user_id,
+        url: db_url+"users/"+user_id,
         contentType: "application/json",
         type:"GET",
         data:{},
