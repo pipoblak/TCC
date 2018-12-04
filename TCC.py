@@ -106,7 +106,7 @@ def check_state():
     
 def trigger_action():
     gpio.output(21,True)
-    time.sleep(2)
+    time.sleep(5)
     gpio.output(21,False)
 def worker_http():
     httpd = socketserver.ThreadingTCPServer(('',8083),http_handler)
@@ -117,8 +117,8 @@ def worker_http():
 def worker_rfid():
         
     while True:
-        read_serial = ser.readline()
         try:
+            read_serial = ser.readline()
             identity = json.loads(read_serial.decode('utf-8'))
             identity_bin = identity['identity']['bin']
             global RFID
@@ -128,8 +128,9 @@ def worker_rfid():
                 user = json.loads('{}')
                 try:
                     ser.write('wait'.encode('utf-8'))
-                    r = requests.get('http://localhost:3001/users/request_access?rfid_token='+identity_bin, timeout=1)
+                    r = requests.get('http://localhost:3001/users/request_access?rfid_token='+identity_bin, timeout=10)
                     user = r.json()
+                    
                 except:
                     print('failed to connect server')
                     ser.write('error'.encode('utf-8'))
@@ -141,7 +142,8 @@ def worker_rfid():
                         frame = cap.read()
                         cv2.imwrite('tmpFileImage.jpg',frame[1]);
                         cap.release()
-                        compare_face = requests.post('http://localhost:3001/users/'+str(user['_id'])+'/compare_face', files = dict(image=open('tmpFileImage.jpg','rb')), timeout=10)
+                        compare_face = requests.post('http://localhost:3001/users/'+str(user['_id'])+'/compare_face', files = dict(image=open('tmpFileImage.jpg','rb')), timeout=50)
+                        print(compare_face.json())
                         try:
                             if(compare_face.json()>=50):
                                 ser.write('check'.encode('utf-8'))
@@ -218,27 +220,33 @@ def worker_fingerprint():
     global fingerprint2
     global finger_comparisson
     while(True):
-        if(fingerprint_state == 'read'):
-            while ( f.readImage() == False ):
-                pass
-            f.convertImage(0x01)
-            finger = f.downloadCharacteristics()
-            fingerprint_state = False
-            time.sleep(2)
-        elif(fingerprint_state=='generate_template'):
-            f.uploadCharacteristics(0x01,fingerprint1)
-            f.uploadCharacteristics(0x02,fingerprint2)
-            f.createTemplate();
-            finger = f.downloadCharacteristics();
-            fingerprint_state = False 
-            time.sleep(2)
-        elif(fingerprint_state=='compare_with_readed'):
-            f.uploadCharacteristics(0x01,fingerprint1)
-            f.uploadCharacteristics(0x02,fingerprint2)
-            finger_comparisson = f.compareCharacteristics();
-            fingerprint_state = False 
-            time.sleep(2)
-        time.sleep(0.5)
+        try:
+            if(fingerprint_state == 'read'):
+                while ( f.readImage() == False ):
+                    pass
+                f.convertImage(0x01)
+                finger = f.downloadCharacteristics()
+                fingerprint_state = False
+                time.sleep(2)
+            elif(fingerprint_state=='generate_template'):
+                f.uploadCharacteristics(0x01,fingerprint1)
+                f.uploadCharacteristics(0x02,fingerprint2)
+                f.createTemplate();
+                finger = f.downloadCharacteristics();
+                fingerprint_state = False 
+                time.sleep(2)
+            elif(fingerprint_state=='compare_with_readed'):
+                f.uploadCharacteristics(0x01,fingerprint1)
+                f.uploadCharacteristics(0x02,fingerprint2)
+                finger_comparisson = f.compareCharacteristics();
+                fingerprint_state = False 
+                time.sleep(2)
+            time.sleep(0.5)
+        except ValueError as e:
+            pass
+        else:
+            pass
+        
 thread_http = threading.Thread(target=worker_http)
 thread_http.start()
 thread_rfid = threading.Thread(target=worker_rfid)
