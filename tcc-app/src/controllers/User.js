@@ -330,6 +330,7 @@ export class UserTable extends Component {
         <table className="pure-table">
           <thead>
             <tr>
+              <th>ID</th>
               <th>Primeiro Nome</th>
               <th>Sobrenome</th>
               <th>CPF</th>
@@ -345,6 +346,7 @@ export class UserTable extends Component {
               this.props.lista.map(function(user){
                 return (
                   <tr data-id={user._id} key={user._id}>
+                    <td>{user._id}</td>
                     <td>{user.first_name}</td>
                     <td>{user.last_name}</td>
                     <td>{user.cpf}</td>
