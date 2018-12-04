@@ -159,6 +159,7 @@ export class ResourceTable extends Component {
         <table className="pure-table">
           <thead>
             <tr>
+              <th>ID</th>
               <th>Tipo</th>
               <th>Action ID</th>
               <th>Target</th>
@@ -170,6 +171,7 @@ export class ResourceTable extends Component {
               this.props.lista.map(function(resource){
                 return (
                   <tr data-id={resource._id} key={resource._id}>
+                    <td>{user_resource._id}</td>
                     <td>{resource.type}</td>
                     <td>{resource.action_id}</td>
                     <td>{resource.target}</td>

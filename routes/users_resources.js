@@ -16,7 +16,7 @@ router.get('/has_permission', function (req, res) {
     .then(result => {
       res.send(result.active);
   }).catch(function (err) {
-    return res.status(400).json({ error: err });
+    return res.send(false);
   });
 });
 crud_interface(UserResource,router);
