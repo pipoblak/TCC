@@ -171,7 +171,7 @@ export class ResourceTable extends Component {
               this.props.lista.map(function(resource){
                 return (
                   <tr data-id={resource._id} key={resource._id}>
-                    <td>{user_resource._id}</td>
+                    <td>{resource._id}</td>
                     <td>{resource.type}</td>
                     <td>{resource.action_id}</td>
                     <td>{resource.target}</td>
