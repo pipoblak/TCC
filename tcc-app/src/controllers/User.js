@@ -70,7 +70,8 @@ export class UserForm extends Component{
       rfid_token: '',
       cpf: '',
       facial_bin: '',
-      biometric_bin: ''
+      biometric_bin: '',
+      pin: ''
     };
     this.submitUser = this.submitUser.bind(this);
     this.setFirstName = this.setFirstName.bind(this);
@@ -80,6 +81,7 @@ export class UserForm extends Component{
     this.setFacialBin = this.setFacialBin.bind(this);
     this.setFingerPrint = this.setFingerPrint.bind(this);
     this.loadRfidToken = this.loadRfidToken.bind(this);
+    this.setPIN = this.setPIN.bind(this);
   }
   setFirstName(event){
     this.setState({first_name:event.target.value});
@@ -89,6 +91,9 @@ export class UserForm extends Component{
   }
   setCpf(event){
     this.setState({cpf:event.target.value});
+  }
+  setPIN(event){
+    this.setState({pin:event.target.value});
   }
   setRfidToken(event){
     this.setState({rfid_token:event.target.value});
@@ -201,6 +206,7 @@ export class UserForm extends Component{
     formData.append('last_name', this.state.last_name);
     formData.append('rfid_token', this.state.rfid_token);
     formData.append('cpf', this.state.cpf);
+    formData.append('pin', this.state.pin);
     formData.append('biometric_bin', this.state.biometric_bin);
     let stateHolder = this;
     if(this.state.biometric_bin==''){
@@ -253,6 +259,7 @@ export class UserForm extends Component{
             <CustomInput id="first_name" type="text" name="user[first_name]" value={this.state.first_name} onChange={this.setFirstName} label="Primeiro Nome"></CustomInput>
             <CustomInput id="last_name" type="text" name="user[last_name]" value={this.state.last_name} onChange={this.setLastName} label="Sobrenome"></CustomInput>
             <CustomInput id="cpf" type="text" name="user[cpf]" value={this.state.cpf} onChange={this.setCpf} label="CPF"></CustomInput>
+            <CustomInput id="pin" type="password" name="user[pin]" value={this.state.pin} onChange={this.setPIN} label="PIN"></CustomInput>
             <CustomInput id="rfid_token" type="text" name="user[rfid_token]"  value={this.state.rfid_token} onChange={this.setRfidToken} label="RFID Token" onDoubleClick={this.loadRfidToken}></CustomInput>
             <CustomInput id="facial_bin" type="file" name="user[facial_bin]"  onChange={this.setFacialBin} label="Foto Rosto"></CustomInput>
             <CustomButton type="button" className="pure-button pure-button-secondary" text="Carregar FingerPrint" onClick={this.setFingerPrint} label="FingerPrint"></CustomButton>

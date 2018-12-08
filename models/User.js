@@ -3,6 +3,7 @@ const User = sequelize.define('user',{
   first_name:{type: Sequelize.STRING},
   last_name:{type: Sequelize.STRING},
   cpf:{type: Sequelize.STRING, unique: true},
+  pin:{type: Sequelize.STRING},
   rfid_token:{type: Sequelize.STRING.BINARY , unique: true},
   biometric_bin:{type: Sequelize.STRING(5000)},
   facial_bin:{type: Sequelize.BLOB('long')},
