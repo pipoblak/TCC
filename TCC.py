@@ -8,6 +8,7 @@ import http.server
 import socketserver
 import threading
 import ast
+import getpass
 from pyfingerprint.pyfingerprint import PyFingerprint
 import RPi.GPIO as gpio 
 gpio.setmode(gpio.BCM)
@@ -143,39 +144,21 @@ def worker_rfid():
                         cv2.imwrite('tmpFileImage.jpg',frame[1]);
                         cap.release()
                         compare_face = requests.post('http://localhost:3001/users/'+str(user['_id'])+'/compare_face', files = dict(image=open('tmpFileImage.jpg','rb')), timeout=50)
-                        print(compare_face.json())
                         try:
+                            print(compare_face.json())
                             if(compare_face.json()>=50):
-                                ser.write('check'.encode('utf-8'))
-                                trigger_action()
-                            else:
-                                global fingerprint_state
-                                global finger_comparisson
-                                global fingerprint1
-                                global fingerprint2
-                                global finger
-                                finger = False
-                                fingerprint_state = 'read'
-                                print('Inserir Dedo')
-                                ser.write('finger'.encode('utf-8'))
-                                while(finger==False):
-                                    time.sleep(1)
-                                    pass
-                                ser.write('wait'.encode('utf-8'))
-                                fingerprint1 = finger
-                                fingerprint2 = ast.literal_eval(user['biometric_bin'])
-                                fingerprint_state = 'compare_with_readed'
-                                while(fingerprint_state!=False):
-                                    time.sleep(1)
-                                    pass
-                                print(finger_comparisson)
-                                if(finger_comparisson>=2):
+                                ser.write('pin'.encode('utf-8'))
+                                user_pin = input('Insira seu PIN: ');
+                                if(user_pin == user['pin']):
                                     ser.write('check'.encode('utf-8'))
                                     trigger_action()
                                 else:
                                     ser.write('error'.encode('utf-8'))
-                                    print('failed fingerprint')
-                                finger_comparisson = False
+                                
+                            else:
+                                ser.write('error'.encode('utf-8'))
+                                print('failed face')
+                                
                         except:
                             ser.write('finger'.encode('utf-8'))
                             print('imagem nao processada')
@@ -187,10 +170,10 @@ def worker_rfid():
                             finger = False
                             fingerprint_state = 'read'
                             print('Inserir Dedo')
-                            ser.write('wait'.encode('utf-8'))
                             while(finger==False):
                                 time.sleep(1)
                                 pass
+                            ser.write('wait'.encode('utf-8'))
                             fingerprint1 = finger
                             fingerprint2 = ast.literal_eval(user['biometric_bin'])
                             fingerprint_state = 'compare_with_readed'
@@ -199,14 +182,21 @@ def worker_rfid():
                                 pass
                             print(finger_comparisson)
                             if(finger_comparisson>=2):
-                                ser.write('check'.encode('utf-8'))
-                                trigger_action()
+                                ser.write('pin'.encode('utf-8'))
+                                user_pin = input('Insira seu PIN: ');
+                                if(user_pin == user['pin']):
+                                    ser.write('check'.encode('utf-8'))
+                                    trigger_action()
+                                else:
+                                    ser.write('error'.encode('utf-8'))
+                                
                             else:
                                 ser.write('error'.encode('utf-8'))
                                 print('failed fingerprint')
                             finger_comparisson = False
                             
                     else:
+                        ser.write('error'.encode('utf-8'))
                         print('Acesso Negado')
             RFID = identity_bin
         except ValueError as e:
